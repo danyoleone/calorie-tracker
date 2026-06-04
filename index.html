@@ -53,6 +53,11 @@
   .macro-cell { background: var(--surface2); border-radius: 10px; padding: 10px; text-align: center; }
   .macro-val { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; }
   .macro-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .macro-bar-wrap { height: 3px; background: var(--border); border-radius: 99px; margin-top: 6px; overflow: hidden; }
+  .macro-bar { height: 100%; border-radius: 99px; transition: width 0.4s ease, background 0.3s; background: var(--green); }
+  .macro-bar.warn { background: #e0a020; }
+  .macro-bar.over { background: var(--red); }
+  .macro-sub { font-size: 10px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
   .add-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; }
   .add-title { font-size: 12px; font-weight: 500; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
   .mode-toggle { display: flex; gap: 6px; margin-bottom: 14px; background: var(--surface2); border-radius: 10px; padding: 4px; }
@@ -116,9 +121,24 @@
       <div class="track-fill" id="trackFill" style="width:0%"></div>
     </div>
     <div class="macro-row">
-      <div class="macro-cell"><div class="macro-val" id="mP">0г</div><div class="macro-lbl">Білок</div></div>
-      <div class="macro-cell"><div class="macro-val" id="mF">0г</div><div class="macro-lbl">Жири</div></div>
-      <div class="macro-cell"><div class="macro-val" id="mC">0г</div><div class="macro-lbl">Вуглев.</div></div>
+      <div class="macro-cell">
+        <div class="macro-val" id="mP">0г</div>
+        <div class="macro-lbl">Білок</div>
+        <div class="macro-bar-wrap"><div class="macro-bar" id="barP" style="width:0%"></div></div>
+        <div class="macro-sub" id="subP">0 / 190г</div>
+      </div>
+      <div class="macro-cell">
+        <div class="macro-val" id="mF">0г</div>
+        <div class="macro-lbl">Жири</div>
+        <div class="macro-bar-wrap"><div class="macro-bar" id="barF" style="width:0%"></div></div>
+        <div class="macro-sub" id="subF">0 / 75г</div>
+      </div>
+      <div class="macro-cell">
+        <div class="macro-val" id="mC">0г</div>
+        <div class="macro-lbl">Вуглев.</div>
+        <div class="macro-bar-wrap"><div class="macro-bar" id="barC" style="width:0%"></div></div>
+        <div class="macro-sub" id="subC">0 / 265г</div>
+      </div>
     </div>
   </div>
 
@@ -315,6 +335,16 @@ function deleteEntry(id) {
   renderAll();
 }
 
+const MACRO_GOALS = { p: 190, f: 75, c: 265 };
+
+function setMacroBar(barId, subId, val, goal) {
+  const pct = Math.min((val / goal) * 100, 100);
+  const bar = document.getElementById(barId);
+  bar.style.width = Math.round(pct) + '%';
+  bar.className = 'macro-bar' + (val > goal ? ' over' : val > goal * 0.85 ? ' warn' : '');
+  document.getElementById(subId).textContent = Math.round(val) + ' / ' + goal + 'г';
+}
+
 function renderStats() {
   const t = log.reduce((a,e) => ({kcal:a.kcal+(e.kcal||0),p:a.p+(e.protein||0),f:a.f+(e.fat||0),c:a.c+(e.carbs||0)}),{kcal:0,p:0,f:0,c:0});
   const pct = Math.min((t.kcal/dailyGoal)*100, 100);
@@ -329,6 +359,9 @@ function renderStats() {
   document.getElementById('mP').textContent = Math.round(t.p) + 'г';
   document.getElementById('mF').textContent = Math.round(t.f) + 'г';
   document.getElementById('mC').textContent = Math.round(t.c) + 'г';
+  setMacroBar('barP', 'subP', t.p, MACRO_GOALS.p);
+  setMacroBar('barF', 'subF', t.f, MACRO_GOALS.f);
+  setMacroBar('barC', 'subC', t.c, MACRO_GOALS.c);
 }
 
 function renderLog() {
