@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Калорії</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0f0f11;
+    --surface: #1a1a1f;
+    --surface2: #222228;
+    --border: #2e2e38;
+    --text: #f0f0f4;
+    --text2: #8888a0;
+    --text3: #555568;
+    --green: #22c98a;
+    --green-dim: #1a3d2e;
+    --red: #e05555;
+    --red-dim: #3d1a1a;
+    --accent: #7c6af7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    padding: 1rem;
+  }
+  .wrap { max-width: 430px; margin: 0 auto; padding-bottom: 2rem; }
+
+  /* Header */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
+  .header-left .date { font-size: 12px; color: var(--text3); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 2px; }
+  .header-left .title { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+  .btn-goal {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 5px;
+    transition: border-color 0.15s;
+  }
+  .btn-goal:hover { border-color: var(--accent); color: var(--text); }
+
+  /* Progress card */
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .kcal-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; }
+  .kcal-main { display: flex; align-items: baseline; gap: 6px; }
+  .kcal-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 40px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--green);
+    transition: color 0.3s;
+  }
+  .kcal-num.over { color: var(--red); }
+  .kcal-unit { font-size: 14px; color: var(--text2); }
+  .kcal-goal { font-size: 13px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+  .track-wrap { position: relative; height: 6px; background: var(--surface2); border-radius: 99px; margin-bottom: 14px; overflow: hidden; }
+  .track-fill {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: var(--green);
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1), background 0.3s;
+  }
+  .track-fill.over { background: var(--red); }
+
+  .macro-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .macro-cell {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .macro-val { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--text); }
+  .macro-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; letter-spacing: 0.03em; }
+
+  /* Add card */
+  .add-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .add-title { font-size: 12px; font-weight: 500; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+
+  .mode-toggle { display: flex; gap: 6px; margin-bottom: 14px; background: var(--surface2); border-radius: 10px; padding: 4px; }
+  .mode-btn {
+    flex: 1; padding: 7px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+    border: none; border-radius: 7px; background: transparent;
+    color: var(--text2); cursor: pointer; font-weight: 500;
+    transition: all 0.15s;
+  }
+  .mode-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+
+  .col-labels { display: grid; grid-template-columns: 68px 58px 1fr; gap: 6px; margin-bottom: 4px; }
+  .col-labels-ingr { display: grid; grid-template-columns: 68px 58px 1fr 34px; gap: 6px; margin-bottom: 4px; }
+  .col-label { font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; padding-left: 2px; }
+
+  .food-row { display: grid; grid-template-columns: 68px 58px 1fr; gap: 6px; margin-bottom: 10px; }
+  .ingr-row { display: grid; grid-template-columns: 68px 58px 1fr 34px; gap: 6px; margin-bottom: 8px; align-items: center; }
+
+  select, input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 9px 8px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }
+  select:focus, input:focus { border-color: var(--accent); }
+  input[type="number"] { text-align: center; }
+  input::placeholder { color: var(--text3); }
+
+  .btn-add-ingr {
+    width: 100%; padding: 8px; font-size: 12px; font-family: 'DM Sans', sans-serif;
+    border: 1px dashed var(--border); border-radius: 8px;
+    background: transparent; color: var(--text3); cursor: pointer;
+    margin-bottom: 10px; transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .btn-add-ingr:hover { border-color: var(--text2); color: var(--text2); }
+
+  .btn-del-ingr {
+    width: 34px; height: 38px; border: 1px solid var(--border);
+    border-radius: 8px; background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text3); font-size: 16px; flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .btn-del-ingr:hover { border-color: var(--red); color: var(--red); }
+
+  .btn-submit {
+    width: 100%; padding: 12px; font-size: 14px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--green-dim); border: 1px solid var(--green);
+    border-radius: 10px; color: var(--green); cursor: pointer;
+    transition: all 0.15s; letter-spacing: 0.01em;
+  }
+  .btn-submit:hover { background: var(--green); color: #0f0f11; }
+  .btn-submit:active { transform: scale(0.98); }
+  .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .status { font-size: 12px; text-align: center; margin-top: 8px; min-height: 18px; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .status.loading { color: var(--accent); }
+  .status.error { color: var(--red); }
+  .status.ok { color: var(--green); }
+
+  /* Log */
+  .log-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+  }
+  .log-title { font-size: 12px; font-weight: 500; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .log-empty { font-size: 13px; color: var(--text3); text-align: center; padding: 1.5rem 0; }
+
+  .log-item {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 11px 0; border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.2s ease;
+  }
+  .log-item:last-child { border-bottom: none; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+  .log-left { flex: 1; min-width: 0; }
+  .log-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-meta { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+  .log-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 8px; }
+  .log-kcal { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text2); }
+  .btn-del {
+    background: none; border: none; cursor: pointer;
+    color: var(--text3); font-size: 14px; padding: 2px;
+    transition: color 0.15s;
+  }
+  .btn-del:hover { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="header-left">
+      <div class="date" id="dateLabel"></div>
+      <div class="title">Мій раціон</div>
+    </div>
+    <button class="btn-goal" onclick="promptGoal()">⚙ ціль</button>
+  </div>
+
+  <div class="progress-card">
+    <div class="kcal-row">
+      <div class="kcal-main">
+        <span class="kcal-num" id="kcalNum">0</span>
+        <span class="kcal-unit">ккал</span>
+      </div>
+      <span class="kcal-goal" id="kcalGoal">/ 2450</span>
+    </div>
+    <div class="track-wrap">
+      <div class="track-fill" id="trackFill" style="width:0%"></div>
+    </div>
+    <div class="macro-row">
+      <div class="macro-cell"><div class="macro-val" id="mP">0г</div><div class="macro-lbl">Білок</div></div>
+      <div class="macro-cell"><div class="macro-val" id="mF">0г</div><div class="macro-lbl">Жири</div></div>
+      <div class="macro-cell"><div class="macro-val" id="mC">0г</div><div class="macro-lbl">Вуглев.</div></div>
+    </div>
+  </div>
+
+  <div class="add-card">
+    <div class="add-title">Додати їжу</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeSimple" onclick="setMode('simple')">Страва цілком</button>
+      <button class="mode-btn" id="modeIngr" onclick="setMode('ingredients')">По інгредієнтах</button>
+    </div>
+
+    <div id="simpleMode">
+      <div class="col-labels">
+        <span class="col-label">Одиниця</span>
+        <span class="col-label">Кільк.</span>
+        <span class="col-label">Страва</span>
+      </div>
+      <div class="food-row">
+        <select id="dishUnit">
+          <option value="г">г</option>
+          <option value="шт">шт</option>
+          <option value="мл">мл</option>
+          <option value="порція">порція</option>
+          <option value="інше">інше</option>
+        </select>
+        <input type="number" id="dishQty" placeholder="100" min="1" />
+        <input type="text" id="dishName" placeholder="Назва страви" />
+      </div>
+    </div>
+
+    <div id="ingrMode" style="display:none">
+      <div class="col-labels-ingr">
+        <span class="col-label">Одиниця</span>
+        <span class="col-label">Кільк.</span>
+        <span class="col-label">Інгредієнт</span>
+        <span class="col-label"></span>
+      </div>
+      <div id="ingrList">
+        <div class="ingr-row">
+          <select class="ingr-unit"><option value="г">г</option><option value="шт">шт</option><option value="мл">мл</option><option value="порція">порція</option><option value="інше">інше</option></select>
+          <input type="number" class="ingr-qty" placeholder="100" min="1" />
+          <input type="text" class="ingr-name" placeholder="Інгредієнт" />
+          <button class="btn-del-ingr" onclick="removeIngr(this)">✕</button>
+        </div>
+      </div>
+      <button class="btn-add-ingr" onclick="addIngr()">+ додати інгредієнт</button>
+    </div>
+
+    <button class="btn-submit" id="btnSubmit" onclick="submitFood()">Розрахувати та додати →</button>
+    <div class="status" id="statusMsg"></div>
+  </div>
+
+  <div class="log-card">
+    <div class="log-title">Сьогодні</div>
+    <div id="logList"><div class="log-empty">Ще нічого не внесено</div></div>
+  </div>
+</div>
+
+<script>
+const WEBHOOK = 'https://hook.eu1.make.com/hf4kjquccw4oywgita4wh3vnji8syr4b';
+const GOAL_KEY = 'cal_goal';
+const LOG_KEY = 'cal_log_';
+let mode = 'simple';
+let dailyGoal = parseInt(localStorage.getItem(GOAL_KEY)) || 2450;
+
+function todayKey() { return LOG_KEY + new Date().toISOString().slice(0,10); }
+function loadLog() { try { return JSON.parse(localStorage.getItem(todayKey()) || '[]'); } catch { return []; } }
+function saveLog(log) { localStorage.setItem(todayKey(), JSON.stringify(log)); }
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('simpleMode').style.display = m === 'simple' ? '' : 'none';
+  document.getElementById('ingrMode').style.display = m === 'ingredients' ? '' : 'none';
+  document.getElementById('modeSimple').classList.toggle('active', m === 'simple');
+  document.getElementById('modeIngr').classList.toggle('active', m === 'ingredients');
+}
+
+function addIngr() {
+  const list = document.getElementById('ingrList');
+  const div = document.createElement('div');
+  div.className = 'ingr-row';
+  div.innerHTML = '<select class="ingr-unit"><option value="г">г</option><option value="шт">шт</option><option value="мл">мл</option><option value="порція">порція</option><option value="інше">інше</option></select><input type="number" class="ingr-qty" placeholder="100" min="1" /><input type="text" class="ingr-name" placeholder="Інгредієнт" /><button class="btn-del-ingr" onclick="removeIngr(this)">✕</button>';
+  list.appendChild(div);
+}
+function removeIngr(btn) {
+  if (document.getElementById('ingrList').children.length > 1) btn.parentElement.remove();
+}
+
+function promptGoal() {
+  const val = prompt('Денна ціль по калоріях (ккал):', dailyGoal);
+  if (val && !isNaN(parseInt(val))) {
+    dailyGoal = parseInt(val);
+    localStorage.setItem(GOAL_KEY, dailyGoal);
+    renderStats();
+  }
+}
+
+function buildPayload() {
+  if (mode === 'simple') {
+    const name = document.getElementById('dishName').value.trim();
+    const qty = document.getElementById('dishQty').value.trim();
+    const unit = document.getElementById('dishUnit').value;
+    if (!name) return null;
+    const qtyStr = qty ? `${qty} ${unit}` : '';
+    const label = qtyStr ? `${name}, ${qtyStr}` : name;
+    return { label, prompt: `Розрахуй КБЖУ для: ${label}. Якщо страва смажена/тушкована і олія не вказана — вважай оливкова екстра вірджін. Відповідай ТІЛЬКИ JSON: {"kcal":0,"protein":0,"fat":0,"carbs":0,"label":"назва"}` };
+  } else {
+    const rows = [...document.querySelectorAll('#ingrList .ingr-row')];
+    const items = rows.map(r => {
+      const n = r.querySelector('.ingr-name').value.trim();
+      const q = r.querySelector('.ingr-qty').value.trim();
+      const u = r.querySelector('.ingr-unit').value;
+      return n ? (q ? `${n} ${q} ${u}` : n) : null;
+    }).filter(Boolean);
+    if (!items.length) return null;
+    const names = rows.map(r => r.querySelector('.ingr-name').value.trim()).filter(Boolean);
+    return { label: names.join(' + '), prompt: `Розрахуй сумарне КБЖУ для: ${items.join(', ')}. Якщо страва смажена/тушкована і олія не вказана — вважай оливкова екстра вірджін. Відповідай ТІЛЬКИ JSON: {"kcal":0,"protein":0,"fat":0,"carbs":0,"label":"назва страви"}` };
+  }
+}
+
+async function submitFood() {
+  const btn = document.getElementById('btnSubmit');
+  const msg = document.getElementById('statusMsg');
+  const payload = buildPayload();
+  if (!payload) { msg.textContent = 'Введіть назву страви'; msg.className = 'status error'; return; }
+
+  btn.disabled = true;
+  msg.textContent = 'розраховую...';
+  msg.className = 'status loading';
+
+  try {
+    const res = await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();
+    let parsed;
+    try { parsed = JSON.parse(text.replace(/```json|```/g,'').trim()); }
+    catch { throw new Error('Невалідна відповідь від сервера'); }
+
+    const log = loadLog();
+    log.push({ ...parsed, label: parsed.label || payload.label, time: new Date().toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}), id: Date.now() });
+    saveLog(log);
+
+    document.getElementById('dishName').value = '';
+    document.getElementById('dishQty').value = '';
+    document.getElementById('dishUnit').value = 'г';
+    document.querySelectorAll('.ingr-name').forEach(i => i.value = '');
+    document.querySelectorAll('.ingr-qty').forEach(i => i.value = '');
+    document.querySelectorAll('.ingr-unit').forEach(i => i.value = 'г');
+    const list = document.getElementById('ingrList');
+    while (list.children.length > 1) list.lastChild.remove();
+
+    msg.textContent = `+ ${Math.round(parsed.kcal)} ккал додано`;
+    msg.className = 'status ok';
+    renderAll();
+  } catch(e) {
+    msg.textContent = e.message;
+    msg.className = 'status error';
+  }
+  btn.disabled = false;
+}
+
+function renderStats() {
+  const log = loadLog();
+  const t = log.reduce((a,e) => ({kcal:a.kcal+(e.kcal||0),p:a.p+(e.protein||0),f:a.f+(e.fat||0),c:a.c+(e.carbs||0)}),{kcal:0,p:0,f:0,c:0});
+  const pct = Math.min((t.kcal/dailyGoal)*100, 100);
+  const over = t.kcal > dailyGoal;
+  const num = document.getElementById('kcalNum');
+  num.textContent = Math.round(t.kcal);
+  num.className = 'kcal-num' + (over ? ' over' : '');
+  document.getElementById('kcalGoal').textContent = '/ ' + dailyGoal;
+  const fill = document.getElementById('trackFill');
+  fill.style.width = Math.round(pct) + '%';
+  fill.className = 'track-fill' + (over ? ' over' : '');
+  document.getElementById('mP').textContent = Math.round(t.p) + 'г';
+  document.getElementById('mF').textContent = Math.round(t.f) + 'г';
+  document.getElementById('mC').textContent = Math.round(t.c) + 'г';
+}
+
+function renderLog() {
+  const log = loadLog();
+  const el = document.getElementById('logList');
+  if (!log.length) { el.innerHTML = '<div class="log-empty">Ще нічого не внесено</div>'; return; }
+  el.innerHTML = [...log].reverse().map(e => `
+    <div class="log-item">
+      <div class="log-left">
+        <div class="log-name">${e.label||'Страва'}</div>
+        <div class="log-meta">${e.time} · Б:${Math.round(e.protein||0)}г Ж:${Math.round(e.fat||0)}г В:${Math.round(e.carbs||0)}г</div>
+      </div>
+      <div class="log-right">
+        <span class="log-kcal">${Math.round(e.kcal||0)} ккал</span>
+        <button class="btn-del" onclick="deleteEntry(${e.id})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function deleteEntry(id) { saveLog(loadLog().filter(e=>e.id!==id)); renderAll(); }
+function renderAll() { renderStats(); renderLog(); }
+
+const d = new Date();
+document.getElementById('dateLabel').textContent = d.toLocaleDateString('uk-UA',{weekday:'long',day:'numeric',month:'long'});
+renderAll();
+</script>
+</body>
+</html>
