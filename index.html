@@ -201,12 +201,12 @@ async function syncFromSheets() {
     const data = JSON.parse(text);
     if (Array.isArray(data) && data.length > 0) {
       log = data.map((e, i) => ({
-        label: e.label || 'Страва',
-        kcal: parseFloat(e.kcal) || 0,
-        protein: parseFloat(e.protein) || 0,
-        fat: parseFloat(e.fat) || 0,
-        carbs: parseFloat(e.carbs) || 0,
-        time: e.time || '',
+        label: e.label || e['2'] || 'Страва',
+        kcal: parseFloat(e.kcal || e['3']) || 0,
+        protein: parseFloat(e.protein || e['4']) || 0,
+        fat: parseFloat(e.fat || e['5']) || 0,
+        carbs: parseFloat(e.carbs || e['6']) || 0,
+        time: e.time || e['1'] || '',
         id: Date.now() + i,
         synced: true
       }));
