@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Калорії" />
+<meta name="theme-color" content="#0f0f11" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
 <title>Калорії</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -29,11 +33,11 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100dvh;
-    padding: 1rem;
+    padding: env(safe-area-inset-top, 1rem) 1rem env(safe-area-inset-bottom, 1rem);
+    padding-top: max(env(safe-area-inset-top), 1rem);
   }
   .wrap { max-width: 430px; margin: 0 auto; padding-bottom: 2rem; }
 
-  /* Header */
   .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
   .header-left .date { font-size: 12px; color: var(--text3); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 2px; }
   .header-left .title { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
@@ -51,7 +55,6 @@
   }
   .btn-goal:hover { border-color: var(--accent); color: var(--text); }
 
-  /* Progress card */
   .progress-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -84,16 +87,10 @@
   .track-fill.over { background: var(--red); }
 
   .macro-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .macro-cell {
-    background: var(--surface2);
-    border-radius: 10px;
-    padding: 10px;
-    text-align: center;
-  }
+  .macro-cell { background: var(--surface2); border-radius: 10px; padding: 10px; text-align: center; }
   .macro-val { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--text); }
   .macro-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; letter-spacing: 0.03em; }
 
-  /* Add card */
   .add-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -116,7 +113,7 @@
   .col-labels-ingr { display: grid; grid-template-columns: 68px 58px 1fr 34px; gap: 6px; margin-bottom: 4px; }
   .col-label { font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; padding-left: 2px; }
 
-  .food-row { display: grid; grid-template-columns: 68px 58px 1fr; gap: 6px; margin-bottom: 10px; }
+  .food-row { display: grid; grid-template-columns: 68px 58px 1fr; gap: 6px; margin-bottom: 8px; }
   .ingr-row { display: grid; grid-template-columns: 68px 58px 1fr 34px; gap: 6px; margin-bottom: 8px; align-items: center; }
 
   select, input {
@@ -142,7 +139,6 @@
     border: 1px dashed var(--border); border-radius: 8px;
     background: transparent; color: var(--text3); cursor: pointer;
     margin-bottom: 10px; transition: all 0.15s;
-    letter-spacing: 0.03em;
   }
   .btn-add-ingr:hover { border-color: var(--text2); color: var(--text2); }
 
@@ -160,9 +156,8 @@
     font-family: 'DM Sans', sans-serif;
     background: var(--green-dim); border: 1px solid var(--green);
     border-radius: 10px; color: var(--green); cursor: pointer;
-    transition: all 0.15s; letter-spacing: 0.01em;
+    transition: all 0.15s;
   }
-  .btn-submit:hover { background: var(--green); color: #0f0f11; }
   .btn-submit:active { transform: scale(0.98); }
   .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -171,13 +166,7 @@
   .status.error { color: var(--red); }
   .status.ok { color: var(--green); }
 
-  /* Log */
-  .log-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.25rem;
-  }
+  .log-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; }
   .log-title { font-size: 12px; font-weight: 500; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
   .log-empty { font-size: 13px; color: var(--text3); text-align: center; padding: 1.5rem 0; }
 
@@ -192,15 +181,30 @@
   .log-left { flex: 1; min-width: 0; }
   .log-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .log-meta { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
-
   .log-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 8px; }
   .log-kcal { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text2); }
-  .btn-del {
-    background: none; border: none; cursor: pointer;
-    color: var(--text3); font-size: 14px; padding: 2px;
-    transition: color 0.15s;
-  }
+  .btn-del { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 14px; padding: 2px; transition: color 0.15s; }
   .btn-del:hover { color: var(--red); }
+
+  .install-banner {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .install-banner p { font-size: 13px; color: var(--text2); }
+  .install-banner strong { color: var(--text); }
+  .btn-install {
+    font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    background: var(--accent); border: none; border-radius: 8px;
+    color: white; padding: 7px 12px; cursor: pointer; white-space: nowrap;
+  }
+  .btn-dismiss { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 0 4px; }
 </style>
 </head>
 <body>
@@ -211,6 +215,14 @@
       <div class="title">Мій раціон</div>
     </div>
     <button class="btn-goal" onclick="promptGoal()">⚙ ціль</button>
+  </div>
+
+  <div id="installBanner" style="display:none" class="install-banner">
+    <p><strong>Додати на екран</strong><br>Користуйся як додатком</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-install" id="btnInstall">Додати</button>
+      <button class="btn-dismiss" onclick="dismissInstall()">×</button>
+    </div>
   </div>
 
   <div class="progress-card">
@@ -290,7 +302,33 @@ const WEBHOOK = 'https://hook.eu1.make.com/hf4kjquccw4oywgita4wh3vnji8syr4b';
 const GOAL_KEY = 'cal_goal';
 const LOG_KEY = 'cal_log_';
 let mode = 'simple';
+let deferredPrompt = null;
 let dailyGoal = parseInt(localStorage.getItem(GOAL_KEY)) || 2450;
+
+// PWA install
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!localStorage.getItem('installDismissed')) {
+    document.getElementById('installBanner').style.display = 'flex';
+  }
+});
+document.getElementById('btnInstall').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBanner').style.display = 'none';
+});
+function dismissInstall() {
+  localStorage.setItem('installDismissed', '1');
+  document.getElementById('installBanner').style.display = 'none';
+}
+
+// Service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/calorie-tracker/sw.js');
+}
 
 function todayKey() { return LOG_KEY + new Date().toISOString().slice(0,10); }
 function loadLog() { try { return JSON.parse(localStorage.getItem(todayKey()) || '[]'); } catch { return []; } }
@@ -366,7 +404,7 @@ async function submitFood() {
     const text = await res.text();
     let parsed;
     try { parsed = JSON.parse(text.replace(/```json|```/g,'').trim()); }
-    catch { throw new Error('Невалідна відповідь від сервера'); }
+    catch { throw new Error('Помилка сервера'); }
 
     const log = loadLog();
     log.push({ ...parsed, label: parsed.label || payload.label, time: new Date().toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}), id: Date.now() });
@@ -428,8 +466,7 @@ function renderLog() {
 function deleteEntry(id) { saveLog(loadLog().filter(e=>e.id!==id)); renderAll(); }
 function renderAll() { renderStats(); renderLog(); }
 
-const d = new Date();
-document.getElementById('dateLabel').textContent = d.toLocaleDateString('uk-UA',{weekday:'long',day:'numeric',month:'long'});
+document.getElementById('dateLabel').textContent = new Date().toLocaleDateString('uk-UA',{weekday:'long',day:'numeric',month:'long'});
 renderAll();
 </script>
 </body>
