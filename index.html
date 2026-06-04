@@ -196,9 +196,7 @@ async function syncFromSheets() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ date: todayDate() })
     });
-    let text = await res.text();
-    text = text.replace(/"time":\s*(\d+):\s*(\d+)/g, '"time":"$1:$2"');
-    const data = JSON.parse(text);
+    const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
       log = data.map((e, i) => ({
         label: e.label || e['2'] || 'Страва',
