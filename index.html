@@ -81,6 +81,13 @@
   .status.loading { color: var(--accent); }
   .status.error { color: var(--red); }
   .status.ok { color: var(--green); }
+  .btn-manual { font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; font-family: 'DM Mono', monospace; padding: 0; margin-bottom: 10px; display: block; text-decoration: underline; text-underline-offset: 3px; }
+  .btn-manual:hover { color: var(--text2); }
+  .manual-panel { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; display: none; }
+  .manual-panel.open { display: block; }
+  .manual-row { display: flex; align-items: center; gap: 8px; }
+  .manual-row input { flex: 1; }
+  .manual-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
   .log-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; }
   .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .log-title { font-size: 12px; font-weight: 500; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
@@ -158,6 +165,13 @@
         <select id="dishUnit"><option value="г">г</option><option value="шт">шт</option><option value="мл">мл</option><option value="порція">порція</option><option value="інше">інше</option></select>
         <input type="number" id="dishQty" placeholder="100" min="1" />
         <input type="text" id="dishName" placeholder="Назва страви" />
+      </div>
+    </div>
+    <button class="btn-manual" onclick="toggleManual()">± вказати ккал вручну</button>
+    <div class="manual-panel" id="manualPanel">
+      <div class="manual-row">
+        <input type="number" id="manualKcal" placeholder="ккал на 100г" min="1" />
+        <span class="manual-label">ккал / 100г</span>
       </div>
     </div>
     <div id="ingrMode" style="display:none">
@@ -265,6 +279,16 @@ function promptGoal() {
   }
 }
 
+function toggleManual() {
+  const panel = document.getElementById('manualPanel');
+  panel.classList.toggle('open');
+  const btn = document.querySelector('.btn-manual');
+  btn.textContent = panel.classList.contains('open') ? '✕ скасувати ручний ккал' : '± вказати ккал вручну';
+  if (!panel.classList.contains('open')) {
+    document.getElementById('manualKcal').value = '';
+  }
+}
+
 function buildPayload() {
   if (mode === 'simple') {
     const name = document.getElementById('dishName').value.trim();
@@ -291,6 +315,30 @@ function buildPayload() {
 async function submitFood() {
   const btn = document.getElementById('btnSubmit');
   const msg = document.getElementById('statusMsg');
+  const manualKcal = parseFloat(document.getElementById('manualKcal').value);
+  const isManual = document.getElementById('manualPanel').classList.contains('open') && manualKcal > 0;
+
+  // Manual kcal mode — calculate without API
+  if (isManual) {
+    const name = document.getElementById('dishName').value.trim();
+    const qty = parseFloat(document.getElementById('dishQty').value) || 100;
+    if (!name) { msg.textContent = 'Введіть назву страви'; msg.className = 'status error'; return; }
+    const kcal = Math.round((manualKcal / 100) * qty);
+    const label = `${name}, ${qty}г`;
+    log.push({ label, kcal, protein: 0, fat: 0, carbs: 0, time: new Date().toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}), id: Date.now(), manual: true });
+    // Still send to Sheets via webhook
+    fetch(WEBHOOK_WRITE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ label, prompt: `Розрахуй КБЖУ для: ${label} (ккал відомо: ${kcal}). Відповідай ТІЛЬКИ JSON: {"kcal":${kcal},"protein":0,"fat":0,"carbs":0,"label":"${label}"}` }) }).catch(()=>{});
+    document.getElementById('dishName').value = '';
+    document.getElementById('dishQty').value = '';
+    document.getElementById('manualKcal').value = '';
+    document.getElementById('manualPanel').classList.remove('open');
+    document.querySelector('.btn-manual').textContent = '± вказати ккал вручну';
+    msg.textContent = `+ ${kcal} ккал додано (вручну)`;
+    msg.className = 'status ok';
+    renderAll();
+    return;
+  }
+
   const payload = buildPayload();
   if (!payload) { msg.textContent = 'Введіть назву страви'; msg.className = 'status error'; return; }
 
